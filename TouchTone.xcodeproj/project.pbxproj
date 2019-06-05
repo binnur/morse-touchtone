@@ -13,6 +13,8 @@
 		D1D63F7B22A6E5CE00C12685 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D1D63F7A22A6E5CE00C12685 /* Assets.xcassets */; };
 		D1D63F7E22A6E5CE00C12685 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D1D63F7C22A6E5CE00C12685 /* LaunchScreen.storyboard */; };
 		D1D63F8922A6E5CE00C12685 /* TouchToneTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D63F8822A6E5CE00C12685 /* TouchToneTests.swift */; };
+		D1D63F9622A876EF00C12685 /* ToneGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = D1D63F9522A876EF00C12685 /* ToneGenerator.m */; };
+		D1D63F9722A876EF00C12685 /* ToneGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = D1D63F9522A876EF00C12685 /* ToneGenerator.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,6 +38,10 @@
 		D1D63F8422A6E5CE00C12685 /* TouchToneTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TouchToneTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D1D63F8822A6E5CE00C12685 /* TouchToneTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchToneTests.swift; sourceTree = "<group>"; };
 		D1D63F8A22A6E5CE00C12685 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D1D63F9322A876EF00C12685 /* TouchTone-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TouchTone-Bridging-Header.h"; sourceTree = "<group>"; };
+		D1D63F9422A876EF00C12685 /* TouchToneTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TouchToneTests-Bridging-Header.h"; sourceTree = "<group>"; };
+		D1D63F9522A876EF00C12685 /* ToneGenerator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ToneGenerator.m; sourceTree = "<group>"; };
+		D1D63F9822A878CB00C12685 /* ToneGenerator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ToneGenerator.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,6 +89,10 @@
 				D1D63F7A22A6E5CE00C12685 /* Assets.xcassets */,
 				D1D63F7C22A6E5CE00C12685 /* LaunchScreen.storyboard */,
 				D1D63F7F22A6E5CE00C12685 /* Info.plist */,
+				D1D63F9522A876EF00C12685 /* ToneGenerator.m */,
+				D1D63F9822A878CB00C12685 /* ToneGenerator.h */,
+				D1D63F9322A876EF00C12685 /* TouchTone-Bridging-Header.h */,
+				D1D63F9422A876EF00C12685 /* TouchToneTests-Bridging-Header.h */,
 			);
 			path = TouchTone;
 			sourceTree = "<group>";
@@ -146,9 +156,11 @@
 				TargetAttributes = {
 					D1D63F6F22A6E5CB00C12685 = {
 						CreatedOnToolsVersion = 10.2.1;
+						LastSwiftMigration = 1020;
 					};
 					D1D63F8322A6E5CE00C12685 = {
 						CreatedOnToolsVersion = 10.2.1;
+						LastSwiftMigration = 1020;
 						TestTargetID = D1D63F6F22A6E5CB00C12685;
 					};
 				};
@@ -199,6 +211,7 @@
 			files = (
 				D1D63F7622A6E5CB00C12685 /* ViewController.swift in Sources */,
 				D1D63F7422A6E5CB00C12685 /* AppDelegate.swift in Sources */,
+				D1D63F9622A876EF00C12685 /* ToneGenerator.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -207,6 +220,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D1D63F8922A6E5CE00C12685 /* TouchToneTests.swift in Sources */,
+				D1D63F9722A876EF00C12685 /* ToneGenerator.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -360,7 +374,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = KPVPWKR7EU;
 				INFOPLIST_FILE = TouchTone/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -368,6 +384,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = binnur.TouchTone;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "TouchTone/TouchTone-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -377,7 +395,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = KPVPWKR7EU;
 				INFOPLIST_FILE = TouchTone/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -385,6 +405,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = binnur.TouchTone;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "TouchTone/TouchTone-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -395,6 +416,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = TouchToneTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -404,6 +426,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = binnur.TouchToneTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "TouchTone/TouchToneTests-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TouchTone.app/TouchTone";
@@ -415,6 +439,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = TouchToneTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -424,6 +449,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = binnur.TouchToneTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "TouchTone/TouchToneTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TouchTone.app/TouchTone";
