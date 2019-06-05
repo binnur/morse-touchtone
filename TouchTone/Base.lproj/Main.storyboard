@@ -24,12 +24,8 @@
                                 <color key="backgroundColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <state key="normal" title="Button"/>
                                 <connections>
-                                    <action selector="touchCancel:" destination="BYZ-38-t0r" eventType="touchCancel" id="OIh-IT-aBo"/>
                                     <action selector="touchDown:" destination="BYZ-38-t0r" eventType="touchDown" id="bpW-7D-4dG"/>
-                                    <action selector="touchDownRepeat:" destination="BYZ-38-t0r" eventType="touchDownRepeat" id="rzW-Yp-aXh"/>
-                                    <action selector="touchPrimaryAction:" destination="BYZ-38-t0r" eventType="primaryActionTriggered" id="QaO-Zc-6nW"/>
                                     <action selector="touchUpInside:" destination="BYZ-38-t0r" eventType="touchUpInside" id="uRL-zD-vjq"/>
-                                    <action selector="touchUpOutside:" destination="BYZ-38-t0r" eventType="touchUpOutside" id="dNy-lc-S9U"/>
                                 </connections>
                             </button>
                         </subviews>

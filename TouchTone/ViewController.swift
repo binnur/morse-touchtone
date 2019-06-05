@@ -21,33 +21,13 @@ class ViewController: UIViewController {
     }
 
     @IBAction func touchDown(_ sender: Any) {
-        print("touch down")
+        print("touch started")
         toneGenerator.start()
     }
 
     @IBAction func touchUpInside(_ sender: Any) {
-        print("touch release")
+        print("touch ended")
         toneGenerator.stop()
-    }
-
-    @IBAction func touchDownRepeat(_ sender: Any) {
-        // double click -- triggered w/ touch down combined w/ a repeat
-        print("touchDownRepeat")
-    }
-
-    @IBAction func touchCancel(_ sender: Any) {
-        // not triggered
-        print("touchCancel")
-    }
-
-    @IBAction func touchUpOutside(_ sender: Any) {
-        // not triggered
-        print("touchUpOutside")
-    }
-
-    @IBAction func touchPrimaryAction(_ sender: Any) {
-        // triggered when touch down (includes double click) + up complete
-        print("touch primary action triggered!")
     }
 
 }
