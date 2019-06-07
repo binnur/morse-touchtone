@@ -12,17 +12,18 @@ class ViewController: UIViewController {
 
     var toneGenerator: ToneGenerator = ToneGenerator()
 
-
     @IBOutlet weak var touchButton: UIButton!
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+
+        // start AudioUnit
+        //toneGenerator.startAudioUnit()
     }
 
     @IBAction func touchDown(_ sender: Any) {
         print("touch started")
-        toneGenerator.start()
+        toneGenerator.play()
     }
 
     @IBAction func touchUpInside(_ sender: Any) {
