@@ -23,11 +23,13 @@ class ViewController: UIViewController {
 
     @IBAction func touchDown(_ sender: Any) {
         print("touch started")
+        touchButton.isHighlighted = true
         toneGenerator.play()
     }
 
     @IBAction func touchUpInside(_ sender: Any) {
         print("touch ended")
+        touchButton.isHighlighted = false
         toneGenerator.stop()
     }
 
