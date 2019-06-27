@@ -15,35 +15,32 @@
 #define ToneGenerator_h
 
 
-#define SINE_WAVE_TONE_GENERATOR_FREQUENCY_DEFAULT 440.0f
+#define TONE_GENERATOR_FREQUENCY_DEFAULT 441.0f
+#define TONE_GENERATOR_AMPLITUDE_DEFAULT 0.05f
 
-#define SINE_WAVE_TONE_GENERATOR_SAMPLE_RATE_DEFAULT 44100.0f
+//// Nyquist Rate for calculating default sample rate -- was 44100.0f
+//#define TONE_GENERATOR_SAMPLE_RATE_DEFAULT  2 * TONE_GENERATOR_FREQUENCY_DEFAULT
 
-#define SINE_WAVE_TONE_GENERATOR_AMPLITUDE_LOW 0.01f
-#define SINE_WAVE_TONE_GENERATOR_AMPLITUDE_MEDIUM 0.02f
-#define SINE_WAVE_TONE_GENERATOR_AMPLITUDE_HIGH 0.03f
-#define SINE_WAVE_TONE_GENERATOR_AMPLITUDE_FULL 0.25f
-#define SINE_WAVE_TONE_GENERATOR_AMPLITUDE_DEFAULT SINE_WAVE_TONE_GENERATOR_AMPLITUDE_MEDIUM
-
-typedef struct {
-    double frequency;
-    double amplitude;
-    double theta;
-} TGChannelInfo;
 
 @interface ToneGenerator : NSObject {
 @public
     AudioComponentInstance _toneUnit;
+    NSInteger _numChannels;
     double _sampleRate;
-    TGChannelInfo *_channels;
-    UInt32 _numChannels;
+    double _frequency;
+    double _amplitude;
+    double _theta;
+    AVAudioPCMBuffer *_buffer;
+
+    AVAudioEngine *_engine;     // needs strong reference
+    AVAudioPlayerNode *_player;
+    AVAudioMixerNode *_mainMixer;
 }
 
-- (id)initWithChannels:(UInt32)size;
-- (id)initWithFrequency:(double)hertz amplitude:(double)volume;
-- (void)playForDuration:(NSTimeInterval)time;
-- (void)play;
-- (void)stop;
+- (void)startEngine;
+- (void)stopEngine;
+- (void)muteEngine;
+- (void)unmuteEngine;
 
 @end
 

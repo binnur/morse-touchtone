@@ -13,136 +13,158 @@
 
 
 /**
- https://christianfloisand.wordpress.com/2013/07/30/building-a-tone-generator-for-ios-using-audio-units/
- https://github.com/MMercieca/Handshake/tree/master/Handshake
- https://github.com/picciano/iOS-Tone-Generator/blob/master/TGSineWaveToneGenerator.m
+ * Sine wave tone generation with AudioEngine. Morse code sounds achieved by
+ * muting mixer on/off during touch
+ *
+ * Basic AudioEngine recipe:
+ *   1. create engine
+ *   2. create nodes
+ *   3. attach nodes to engine
+ *   4. connect nodes together
+ *   5. start engine
+ *
+ * Helpful resources:
+ *   - https:christianfloisand.wordpress.com/2013/07/30/building-a-tone-generator-for-ios-using-audio-units/
+ *   - https:github.com/MMercieca/Handshake/tree/master/Handshake
+ *   - https:github.com/picciano/iOS-Tone-Generator/blob/master/TGSineWaveToneGenerator.m
  */
-
-OSStatus RenderTone(
-                    void *inRefCon,
-                    AudioUnitRenderActionFlags   *ioActionFlags,
-                    const AudioTimeStamp         *inTimeStamp,
-                    UInt32                         inBusNumber,
-                    UInt32                         inNumberFrames,
-                    AudioBufferList             *ioData)
-
-{
-    // Get the tone parameters out of the object
-    ToneGenerator *toneGenerator = (__bridge ToneGenerator *)inRefCon;
-    assert(ioData->mNumberBuffers == toneGenerator->_numChannels);
-
-    for (size_t chan = 0; chan < toneGenerator->_numChannels; chan++) {
-        double theta = toneGenerator->_channels[chan].theta;
-        double amplitude = toneGenerator->_channels[chan].amplitude;
-        double theta_increment = 2.0 * M_PI * toneGenerator->_channels[chan].frequency / toneGenerator->_sampleRate;
-
-        Float32 *buffer = (Float32 *)ioData->mBuffers[chan].mData;
-        // Generate the samples
-        for (UInt32 frame = 0; frame < inNumberFrames; frame++) {
-            buffer[frame] = sin(theta) * amplitude;
-
-            theta += theta_increment;
-            // Basically do modulo
-            if (theta > 2.0 * M_PI) {
-                theta -= 2.0 * M_PI;
-            }
-        }
-
-        // Store the theta back in the view controller
-        toneGenerator->_channels[chan].theta = theta;
-    }
-
-    return noErr;
-}
 
 @implementation ToneGenerator
 
+// MARK: -
+// Initialize ToneGenerator for operation
 - (id)init
 {
-    return [self initWithFrequency:SINE_WAVE_TONE_GENERATOR_FREQUENCY_DEFAULT amplitude:SINE_WAVE_TONE_GENERATOR_AMPLITUDE_DEFAULT];
-}
-
-- (id)initWithFrequency:(double)hertz amplitude:(double)volume {
     if (self = [super init]) {
-        _numChannels = 1;
-        _channels = calloc(sizeof(TGChannelInfo), _numChannels);
-        if (_channels == NULL) return nil;
+        _frequency = TONE_GENERATOR_FREQUENCY_DEFAULT;
+        _amplitude = TONE_GENERATOR_AMPLITUDE_DEFAULT;
 
-        _channels[0].frequency = hertz;
-        _channels[0].amplitude = volume;
+        // Setup AudioSession management
+        [self _initAudioSession];
 
-        _sampleRate = SINE_WAVE_TONE_GENERATOR_SAMPLE_RATE_DEFAULT;
-        [self _setupAudioSession];
-        //        OSStatus result = AudioSessionInitialize(NULL, NULL, ToneInterruptionListener, (__bridge void *)(self));
-        //        if (result == kAudioSessionNoError)
-        //        {
-        //            UInt32 sessionCategory = kAudioSessionCategory_MediaPlayback;
-        //            AudioSessionSetProperty(kAudioSessionProperty_AudioCategory, sizeof(sessionCategory), &sessionCategory);
-        //        }
-        //        AudioSessionSetActive(true);
+        // init AudioEngine
+        [self _initAudioEngineNodes];
+        [self _createEngineAndAttachNodes];
+        [self _makeEngineConnections];
     }
 
     return self;
-}
-
-- (id)initWithChannels:(UInt32)size {
-    if (self = [super init]) {
-        _numChannels = size;
-        _channels = calloc(sizeof(TGChannelInfo), _numChannels);
-        if (_channels == NULL) return nil;
-
-        for (size_t i = 0; i < _numChannels; i++) {
-            _channels[i].frequency = SINE_WAVE_TONE_GENERATOR_FREQUENCY_DEFAULT / ( i + 0.4);//Just because
-            _channels[i].amplitude = SINE_WAVE_TONE_GENERATOR_AMPLITUDE_DEFAULT;
-        }
-        _sampleRate = SINE_WAVE_TONE_GENERATOR_SAMPLE_RATE_DEFAULT;
-        [self _setupAudioSession];
-    }
-
-    return self;
-
 }
 
 - (void)dealloc {
+    NSLog(@"deallocating ToneGenerator\n");
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    if (_channels != NULL) {
-        free(_channels);
+}
+
+// AudioEngine setup and initialization
+- (void)_initAudioEngineNodes {
+    // create instance of all needed nodes
+    _player = [[AVAudioPlayerNode alloc] init];
+    NSAssert(_player !=nil, @"Error! Couldn't start player");
+}
+
+- (void)_createEngineAndAttachNodes {
+    // create an instance of engine
+    _engine = [[AVAudioEngine alloc] init];
+    NSAssert(_engine != nil, @"Error! Couldn't start AudioEngine");
+
+    // attach player node to engine
+    [_engine attachNode: _player];
+}
+
+// Audio flow: player(sine buffer source) -> mixer (sound control) -> output
+- (void)_makeEngineConnections {
+    // initialize mixer for output
+    // The engine constructs a singleton main mixer and connects it to the
+    //  outputNode on demand. Additional nodes can then be connected to the mixer
+    //  By default, the mixer's output format (sample rate and channel count) tracks
+    //  the format of the output node.
+
+    _mainMixer = [_engine mainMixerNode];
+    NSAssert(_mainMixer != nil, @"Error! Couldn't initialize mixer");
+
+    // update samplerate and number of channels given mixer
+    _sampleRate = [[_mainMixer outputFormatForBus:0] sampleRate];
+    _numChannels = [[_mainMixer outputFormatForBus:0] channelCount];
+
+    // setup sine wave buffer
+    [self _initAudioBuffer];
+
+    // schedule player for looping model
+    [_player scheduleBuffer:_buffer
+                     atTime:nil
+                    options:AVAudioPlayerNodeBufferLoops
+          completionHandler:nil];
+
+    // connect player node to engine's main mixer
+    [_engine connect:_player to:_mainMixer format:[_mainMixer outputFormatForBus: 0]];
+
+    // TODO: add tap here
+
+}
+
+// generate sine wave
+- (void)_initAudioBuffer {
+    // With default frequency of 441.0 and sample rate of 44.1 kHz, we have a
+    // 1:100 ratio for number of samples in the buffer.
+    // With a whole multitude result, we have a complete sine wave (vs. 440/44100),
+    // which is good for a smooth looping experience
+    AVAudioFrameCount frameBufferLength = floor(_sampleRate / _frequency) * 1;
+
+    _buffer = [[AVAudioPCMBuffer alloc] initWithPCMFormat:[_player outputFormatForBus:0]
+                                            frameCapacity:frameBufferLength];
+    _buffer.frameLength = frameBufferLength;
+
+    float *const *floatChannelData = _buffer.floatChannelData;
+
+    NSLog(@"Sine generator: sample rate = %.1f, %ld channels, frame length = %u.", _sampleRate, (long)_numChannels, _buffer.frameLength);
+
+    // fill the buffer w/ sine wave
+    for (int i = 0; i < _buffer.frameLength ; i ++) {
+        float theta = _frequency * i * 2.0 * M_PI / _sampleRate;
+        float value = sinf(theta);
+        for (int channelNumber = 0; channelNumber < _numChannels; channelNumber++) {
+            float * const channelBuffer = floatChannelData[channelNumber];
+            channelBuffer[i] = value * _amplitude;
+        }
     }
 }
 
-- (void)playForDuration:(NSTimeInterval)time {
-    [self play];
-    [self performSelector:@selector(stop) withObject:nil afterDelay:time];
+// MARK: -
+// Audio control functions
+-(void)startEngine {
+    // start engine -- starts the audio hardware and audio flow
+    NSError *error;
+    NSAssert([_engine startAndReturnError:&error], @"couldn't start engine, %@", [error localizedDescription]);
 }
 
-- (void)play {
-    if (!_toneUnit) {
-        [self _createToneUnit];
+- (void)stopEngine {
+    [_engine stop];
+    [_player stop];
+}
 
-        // Stop changing parameters on the unit
-        OSErr err = AudioUnitInitialize(_toneUnit);
-        NSAssert1(err == noErr, @"Error initializing unit: %hd", err);
-
-        // Start playback
-        err = AudioOutputUnitStart(_toneUnit);
-        NSAssert1(err == noErr, @"Error starting unit: %hd", err);
+- (void)unmuteEngine {
+    // mixer volume full on
+    if ([_player isPlaying] == false) {
+        [_player play];
     }
+    _mainMixer.outputVolume = 1.0;
 }
 
-- (void)stop {
-    if (_toneUnit) {
-        AudioOutputUnitStop(_toneUnit);
-        AudioUnitUninitialize(_toneUnit);
-        AudioComponentInstanceDispose(_toneUnit);
-        _toneUnit = nil;
-    }
+- (void)muteEngine {
+    // mixer volume muted
+    _mainMixer.outputVolume = 0.0;
 }
 
-- (void)_setupAudioSession {
+
+// MARK: -
+// MARK: AudioSession configuration
+- (void)_initAudioSession {
+    // TODO: Add AudioSession mgmt
     AVAudioSession *audioSession = [AVAudioSession sharedInstance];
-    BOOL ok;
     NSError *setCategoryError = nil;
-    ok = [audioSession setCategory:AVAudioSessionCategoryPlayback error:&setCategoryError];
+
+    BOOL ok = [audioSession setCategory:AVAudioSessionCategoryPlayback error:&setCategoryError];
     NSAssert1(ok, @"Audio error %@", setCategoryError);
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(_handleInterruption:)
@@ -151,61 +173,9 @@ OSStatus RenderTone(
 }
 
 - (void)_handleInterruption:(id)sender {
-    [self stop];
+    [self muteEngine];
 }
 
-- (void)_createToneUnit {
-    // Configure the search parameters to find the default playback output unit
-    // (called the kAudioUnitSubType_RemoteIO on iOS but
-    // kAudioUnitSubType_DefaultOutput on Mac OS X)
-    AudioComponentDescription defaultOutputDescription;
-    defaultOutputDescription.componentType = kAudioUnitType_Output;
-    defaultOutputDescription.componentSubType = kAudioUnitSubType_RemoteIO;
-    defaultOutputDescription.componentManufacturer = kAudioUnitManufacturer_Apple;
-    defaultOutputDescription.componentFlags = 0;
-    defaultOutputDescription.componentFlagsMask = 0;
-
-    // Get the default playback output unit
-    AudioComponent defaultOutput = AudioComponentFindNext(NULL, &defaultOutputDescription);
-    NSAssert(defaultOutput, @"Can't find default output");
-
-    // Create a new unit based on this that we'll use for output
-    OSErr err = AudioComponentInstanceNew(defaultOutput, &_toneUnit);
-    NSAssert1(_toneUnit, @"Error creating unit: %hd", err);
-
-    // Set our tone rendering function on the unit
-    AURenderCallbackStruct input;
-    input.inputProc = RenderTone;
-    input.inputProcRefCon = (__bridge void *)(self);
-    err = AudioUnitSetProperty(_toneUnit,
-                               kAudioUnitProperty_SetRenderCallback,
-                               kAudioUnitScope_Input,
-                               0,
-                               &input,
-                               sizeof(input));
-    NSAssert1(err == noErr, @"Error setting callback: %hd", err);
-
-    // Set the format to 32 bit, single channel, floating point, linear PCM
-    const int four_bytes_per_float = 4;
-    const int eight_bits_per_byte = 8;
-    AudioStreamBasicDescription streamFormat;
-    streamFormat.mSampleRate = _sampleRate;
-    streamFormat.mFormatID = kAudioFormatLinearPCM;
-    streamFormat.mFormatFlags =
-    kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved;
-    streamFormat.mBytesPerPacket = four_bytes_per_float;
-    streamFormat.mFramesPerPacket = 1;
-    streamFormat.mBytesPerFrame = four_bytes_per_float;
-    streamFormat.mChannelsPerFrame = _numChannels;
-    streamFormat.mBitsPerChannel = four_bytes_per_float * eight_bits_per_byte;
-    err = AudioUnitSetProperty (_toneUnit,
-                                kAudioUnitProperty_StreamFormat,
-                                kAudioUnitScope_Input,
-                                0,
-                                &streamFormat,
-                                sizeof(AudioStreamBasicDescription));
-    NSAssert1(err == noErr, @"Error setting stream format: %hd", err);
-}
 
 @end
 

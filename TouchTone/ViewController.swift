@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import AVFoundation
 
 class ViewController: UIViewController {
 
@@ -17,20 +18,28 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        print("viewDidLoad")
         // start AudioUnit
-        //toneGenerator.startAudioUnit()
+        //toneGenerator.initAudioUnit()
+
+        toneGenerator.startEngine()
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        print("viewDidDissapear")
+        toneGenerator.stopEngine()
     }
 
     @IBAction func touchDown(_ sender: Any) {
-        print("touch started")
         touchButton.isHighlighted = true
-        toneGenerator.play()
+//        toneGenerator.play()
+        toneGenerator.unmuteEngine()
     }
 
     @IBAction func touchUpInside(_ sender: Any) {
-        print("touch ended")
         touchButton.isHighlighted = false
-        toneGenerator.stop()
+//        toneGenerator.stop()
+        toneGenerator.muteEngine()
     }
 
 }
