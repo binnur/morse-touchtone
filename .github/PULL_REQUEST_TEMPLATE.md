@@ -1,6 +1,7 @@
 Fixes #
 
-## Changes proposed in this PR
+And PR description
 
-# Checklist
+## Checklists
+- [ ] Specified a valid Fixes Issue # for PR
 - [ ] Added to TouchTone Project
